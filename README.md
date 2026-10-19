@@ -1,20 +1,28 @@
 # Fernanda Nunes | Portfolio
 
-Site estatico (HTML, CSS e JS puros), pronto para o GitHub Pages. Nao precisa de build para publicar.
+Site estatico (HTML, CSS e JS puros) para o GitHub Pages. Nao precisa de build para publicar.
 
-## Como publicar
-1. Crie um repositorio publico chamado `SEU-USUARIO.github.io`.
-2. Envie TODO o conteudo desta pasta para a raiz do repositorio (Add file > Upload files). O `index.html` precisa ficar na raiz, e o arquivo `.nojekyll` tambem.
-3. Settings > Pages > Deploy from a branch > `main` / `(root)` > Save.
-4. Em 1 ou 2 minutos o site abre em `https://SEU-USUARIO.github.io`.
+## Onde ficam as imagens
+Cada projeto tem a sua pasta dentro de `assets/`, com nomes legiveis:
 
-## Como editar
-- **Cores, fontes e espacamentos:** `assets/style.css` (as cores ficam nas primeiras linhas, em `:root`).
-- **Textos e ordem dos projetos:** `_builder/build.py` (listas `WORK`, `SIDE`, `COVERS`, `LAYOUT` no topo) e depois rodar o build.
-- **Rodar o build** (precisa de Python 3 com `markdown-it-py`, `beautifulsoup4` e `Pillow`, e do `ffmpeg`):
-  `python3 _builder/build.py "caminho/do/export-do-notion" dist`
-  O site novo sai na pasta `dist`. Substitua os arquivos do repositorio por ele.
+- `assets/suspects/cover.webp` = capa do Suspects (a que aparece na home)
+- `assets/suspects/main-menu-revamp/` = imagens do case Main Menu Revamp
+- `assets/tennis-clash-social/club-slam-ux/` = imagens do case Club Slam
+- `assets/about/` = jogos favoritos da pagina About
 
-## O que ainda falta
-- **Capas:** o Notion nao exporta as capas dos projetos. Os projetos sem imagem aparecem com um bloco colorido e iniciais (Angry Birds Friends, AFK Football, Corpcity, Customer Segmentation e a maioria dos side projects). Para trocar, informe o caminho da imagem em `COVERS` no `build.py`.
-- **Imagens do Wix:** 62 imagens de side projects ainda estao hospedadas no Wix (links externos). Se voce fechar o Wix, elas somem. O ideal e baixar e colocar na pasta do export antes de rodar o build de novo.
+**Para trocar uma imagem:** salve a nova no formato `.webp` (ou `.png`/`.jpg`, mas ai o nome do arquivo muda e e preciso ajustar o HTML), com o MESMO nome e na MESMA pasta, e envie por cima da antiga.
+**Para trocar uma capa:** substitua o `cover.webp` da pasta do projeto. Qualquer proporcao funciona, ela e recortada automaticamente.
+
+## Ver o site no computador antes de publicar
+1. Instale o VS Code (code.visualstudio.com) e a extensao **Live Server**.
+2. Abra a pasta do site no VS Code, clique com o botao direito em `index.html` e escolha **Open with Live Server**.
+3. O site abre em `http://127.0.0.1:5500` e atualiza sozinho cada vez que voce salva um arquivo.
+Alternativa sem instalar nada: no Terminal, dentro da pasta do site, rode `python3 -m http.server 8000` e abra `http://localhost:8000`.
+
+## Publicar
+Quando estiver satisfeita, envie os arquivos alterados para o repositorio (GitHub Desktop: Commit e Push; ou pelo site: Add file > Upload files > Commit changes).
+
+## Editar
+- **Cores, fontes e espacamentos:** `assets/style.css` (as cores ficam no inicio, em `:root`).
+- **Textos pequenos:** edite direto o `.html` da pagina.
+- **Atencao:** a pasta `_builder` gera o site inteiro a partir do export do Notion. Se rodar o build de novo, ele sobrescreve edicoes feitas a mao nos `.html`. Escolha um jeito e mantenha: editar a mao, ou editar pelo builder.

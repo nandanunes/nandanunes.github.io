@@ -103,35 +103,42 @@ if not ROOT.exists():
     sys.exit(f"Could not find the folder 'Fernanda Nunes' inside {EXPORT}")
 
 if DIST.exists(): shutil.rmtree(DIST)
-for sub in ("assets/img", "assets/vid"): (DIST / sub).mkdir(parents=True, exist_ok=True)
+(DIST / "assets").mkdir(parents=True, exist_ok=True)
+
+OUT_NAMES = {}      # output path -> source file (avoids name clashes)
+def out_path(folder, name, ext, src):
+    base, n = name, 2
+    while True:
+        rel = f"assets/{folder}/{name}.{ext}"
+        if OUT_NAMES.get(rel, str(src)) == str(src): break
+        name = f"{base}-{n}"; n += 1
+    OUT_NAMES[rel] = str(src)
+    (DIST / rel).parent.mkdir(parents=True, exist_ok=True)
+    return rel
 
 IMG_CACHE = {}
-def proc_image(path, maxw=2200, q=88):
-    key = (str(path), maxw)
+def proc_image(path, folder, name=None, maxw=2200, q=88):
+    key = (str(path), folder, name, maxw)
     if key in IMG_CACHE: return IMG_CACHE[key]
-    digest = hashlib.sha1(path.read_bytes()).hexdigest()[:10]
-    rel = f"assets/img/{digest}-{maxw}.webp"
+    rel = out_path(folder, name or slugify(path.stem), "webp", path)
     im = Image.open(path); im.load()
     if im.mode not in ("RGB", "RGBA"):
         im = im.convert("RGBA" if "A" in im.mode or im.mode == "P" else "RGB")
     if im.size[0] > maxw:
         im = im.resize((maxw, round(im.size[1] * maxw / im.size[0])), Image.LANCZOS)
-    if not (DIST / rel).exists():
-        im.save(DIST / rel, "WEBP", quality=q, method=4)
+    im.save(DIST / rel, "WEBP", quality=q, method=4)
     IMG_CACHE[key] = dict(url=rel, w=im.size[0], h=im.size[1])
     return IMG_CACHE[key]
 
 VID_CACHE = {}
-def proc_video(path):
-    if str(path) in VID_CACHE: return VID_CACHE[str(path)]
-    digest = hashlib.sha1(path.read_bytes()).hexdigest()[:10]
-    rel = f"assets/vid/{digest}.mp4"
-    if not (DIST / rel).exists():
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path),
-                        "-vf", "scale='min(1280,iw)':-2:flags=lanczos,format=yuv420p",
-                        "-c:v", "libx264", "-crf", "27", "-preset", "veryfast",
-                        "-movflags", "+faststart", "-an", str(DIST / rel)], check=True)
-    VID_CACHE[str(path)] = rel
+def proc_video(path, folder):
+    if (str(path), folder) in VID_CACHE: return VID_CACHE[(str(path), folder)]
+    rel = out_path(folder, slugify(path.stem), "mp4", path)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path),
+                    "-vf", "scale='min(1280,iw)':-2:flags=lanczos,format=yuv420p",
+                    "-c:v", "libx264", "-crf", "27", "-preset", "veryfast",
+                    "-movflags", "+faststart", "-an", str(DIST / rel)], check=True)
+    VID_CACHE[(str(path), folder)] = rel
     return rel
 
 # ----------------------------------------------------------------------------
@@ -175,6 +182,11 @@ class Page:
         return f"{'work' if self.kind == 'work' else 'side'}/{self.slug}/"
     @property
     def depth(self): return self.url.count("/")
+
+def folder_of(page):
+    if page.kind == "about": return "about"
+    if page.kind == "case": return f"{page.parent.slug}/{page.slug}"
+    return page.slug
 
 def find_md(directory, title):
     """Find the .md whose first line is '# title'."""
@@ -263,7 +275,7 @@ def wix_original(url):
     m = re.match(r"(https://static\.wixstatic\.com/media/[^/]+)/v1/.*", url)
     return m.group(1) if m else url
 
-def media_for(img_src, page_dir, soup, alt="", icon=False):
+def media_for(img_src, page_dir, soup, folder, alt="", icon=False):
     """Return (kind, element) for an image/gif/mp4 reference."""
     if img_src.startswith("http"):
         el = tag(soup, "img", src=img_src, alt=alt, loading="lazy", referrerpolicy="no-referrer")
@@ -274,12 +286,12 @@ def media_for(img_src, page_dir, soup, alt="", icon=False):
         print("  ! missing file:", path.name); return None, None
     ext = path.suffix.lower()
     if ext in (".gif", ".mp4", ".mov", ".webm"):
-        rel = proc_video(path)
+        rel = proc_video(path, folder)
         v = tag(soup, "video", src="@@ROOT@@" + rel, muted="", playsinline="", preload="metadata")
         if ext == ".gif": v["autoplay"] = ""; v["loop"] = ""
         else: v["controls"] = ""
         return "video", v
-    info = proc_image(path, 160 if icon else 2200)
+    info = proc_image(path, folder, (slugify(path.stem) + "-icon") if icon else None, 160 if icon else 2200)
     el = tag(soup, "img", src="@@ROOT@@" + info["url"], alt=alt, width=info["w"], height=info["h"], loading="lazy")
     if not icon: el["data-full"] = "@@ROOT@@" + info["url"]
     return "img", el
@@ -287,6 +299,7 @@ def media_for(img_src, page_dir, soup, alt="", icon=False):
 def process_html(page, raw_html):
     soup = BeautifulSoup(raw_html, "html.parser")
     d = page.dir
+    folder = folder_of(page)
 
     # 5a. heading levels: compact to h2..h5, add ids
     lv = sorted({int(h.name[1]) for h in soup.find_all(re.compile(r"^h[1-6]$"))})
@@ -305,7 +318,7 @@ def process_html(page, raw_html):
 
     # 5b. icons inside link cards / callouts
     for img in soup.select("img.ic-img"):
-        kind, el = media_for(img["src"], d, soup, icon=True)
+        kind, el = media_for(img["src"], d, soup, folder, icon=True)
         if el is None: img.replace_with(NavigableString("▶")); continue
         el["class"] = ["ic-img"]; el["alt"] = ""; img.replace_with(el)
 
@@ -317,7 +330,7 @@ def process_html(page, raw_html):
         k = kids[0]
         if k.name == "img":
             alt = k.get("alt", "").strip()
-            kind, el = media_for(unq(k["src"]) if not k["src"].startswith("http") else k["src"], d, soup,
+            kind, el = media_for(unq(k["src"]) if not k["src"].startswith("http") else k["src"], d, soup, folder,
                                  alt="" if GENERIC_ALT.match(alt) else alt)
             if el is None: p.decompose(); continue
             fig = tag(soup, "figure", ["wide", "fig"]); fig.append(el)
@@ -334,7 +347,7 @@ def process_html(page, raw_html):
                 fr["allow"] = "accelerometer; encrypted-media; picture-in-picture"
                 wrap.append(fr); p.replace_with(wrap)
             elif unq(href).lower().endswith(".mp4"):
-                kind, el = media_for(href, d, soup)
+                kind, el = media_for(href, d, soup, folder)
                 if el is not None:
                     fig = tag(soup, "figure", ["wide", "fig"]); fig.append(el); p.replace_with(fig)
 
@@ -481,7 +494,7 @@ def make_toc(body):
 # ----------------------------------------------------------------------------
 def thumb(page, width=900):
     if page.cover and (ROOT / page.cover).exists():
-        info = proc_image(ROOT / page.cover, width, 84)
+        info = proc_image(ROOT / page.cover, folder_of(page), "cover", width, 84)
         return f'<div class="thumb"><img src="@@ROOT@@{info["url"]}" width="{info["w"]}" height="{info["h"]}" alt="" loading="lazy"></div>'
     hue = int(hashlib.sha1(page.title.encode()).hexdigest()[:4], 16) % 60 + 235
     words=[w for w in re.findall(r"[A-Za-zÀ-ÿ0-9#]+", page.title) if w.lower() not in ("a","of","the","de","da","do","é","uma","and")]
@@ -618,7 +631,7 @@ def about_page(page):
     for row in csv.DictReader(csv_files[0].open(encoding="utf-8-sig")):
         name = row["Name"]
         img = next((p for p in (page.dir / "About Me" / "Even more about me" / name).glob("*") if p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")), None) if (page.dir / "About Me" / "Even more about me" / name).exists() else None
-        if img: favs.append((name, row["Tags"], proc_image(img, 700, 84)))
+        if img: favs.append((name, row["Tags"], proc_image(img, "about", "favorite-" + slugify(name), 700, 84)))
     cards = "".join(f'<figure class="fav"><img src="@@ROOT@@{i["url"]}" width="{i["w"]}" height="{i["h"]}" alt="{esc(n)}" loading="lazy"><figcaption><strong>{esc(n)}</strong><span>{esc(t)}</span></figcaption></figure>' for n, t, i in favs)
     sb = BeautifulSoup(body, "html.parser")
     if not lead:
