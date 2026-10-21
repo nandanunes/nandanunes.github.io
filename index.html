@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fernanda Nunes</title>
 <meta name="description" content="Portfolio of Fernanda Nunes, interdisciplinary designer focused on mobile games.">
+<meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -47,7 +52,7 @@ h4{font-size:var(--fs-m);font-weight:600;line-height:1.35;margin:var(--s4) 0 var
 p{margin:0 0 var(--s3)}
 
 /* theme toggle */
-#theme{position:absolute;top:var(--s3);right:var(--s3);width:2.75rem;height:2.75rem;border-radius:50%;border:0;background:var(--box);color:var(--text);cursor:pointer;display:grid;place-items:center}
+#theme{position:fixed;z-index:50;top:calc(var(--s3) + env(safe-area-inset-top,0px));right:calc(var(--s3) + env(safe-area-inset-right,0px));width:2.75rem;height:2.75rem;border-radius:50%;border:0;background:var(--box);color:var(--text);cursor:pointer;display:grid;place-items:center}
 #theme:hover{filter:brightness(.96)}
 
 /* gray placeholder boxes */
@@ -129,16 +134,16 @@ p{margin:0 0 var(--s3)}
 }
 
 /* images: wider than the text column, but never stretched past their own size */
-.figs{position:relative;left:50%;transform:translateX(-50%);width:min(var(--wide),calc(100vw - 2 * var(--s4)));margin:var(--s5) 0}
+.figs{width:100%;margin:var(--s5) 0}
 .figs .row{display:grid;grid-template-columns:repeat(var(--n,1),1fr);gap:var(--s3);align-items:start}
 .figs.many .row{grid-template-columns:repeat(auto-fill,minmax(9.5rem,1fr))}
 .figs figure{margin:0}
 .figs .box{width:100%}
-.figs a.zoom{display:block;width:fit-content;max-width:100%;margin-inline:auto}
-.figs img.real,.figs video.real{display:block;width:auto;max-width:100%;height:auto;margin-inline:auto}
-.figs figcaption{font-size:var(--fs-xs);line-height:1.4;color:var(--muted);margin-top:var(--s2);text-align:center}
+.figs a.zoom{display:block;width:fit-content;max-width:100%;cursor:zoom-in}
+.figs img.real,.figs video.real{display:block;width:auto;max-width:100%;height:auto}
+.figs figcaption{font-size:var(--fs-xs);line-height:1.4;color:var(--muted);margin-top:var(--s2)}
 .box.fixed img,.box.fixed video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.box.fixed a.zoom{position:absolute;inset:0;display:block;margin:0}
+.box.fixed a.zoom{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;margin:0;cursor:zoom-in}
 
 /* ---------- tracks: pick a step to read more ---------- */
 .tracks{margin:var(--s4) 0 var(--s3)}
@@ -162,6 +167,11 @@ p{margin:0 0 var(--s3)}
 .cont[hidden]{display:none}
 .cont:hover{background:color-mix(in srgb,var(--text) 82%,var(--bg))}
 
+.lb{position:fixed;inset:0;z-index:100;background:rgba(14,14,14,.94);overflow:auto;display:grid;place-items:center;padding:var(--s3)}
+.lb img{max-width:96vw;max-height:92vh;cursor:zoom-in}
+.lb.full{place-items:start}
+.lb.full img{max-width:none;max-height:none;cursor:zoom-out}
+.lb button{position:fixed;top:var(--s3);right:var(--s3);min-height:2.75rem;padding:0 var(--s3);border:0;border-radius:999px;background:#fafafa;color:#1c1c1c;font-weight:500;cursor:pointer}
 .foot{margin-top:var(--s7);font-size:var(--fs-s)}
 .foot a{display:inline-flex;align-items:center;min-height:2.75rem;text-decoration:none}
 .error{color:var(--muted);font-size:var(--fs-s)}
@@ -341,6 +351,22 @@ p{margin:0 0 var(--s3)}
     });
     return rootList;
   }
+
+  /* ---------- lightbox: click an image to see it larger (click again for 100%, Esc to close) ---------- */
+  var lb = null;
+  function closeLb() { if (lb) { lb.remove(); lb = null; document.body.style.overflow = ""; } }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a.zoom");
+    if (!a) return;
+    e.preventDefault();
+    lb = el("div", "lb"); lb.setAttribute("role", "dialog"); lb.setAttribute("aria-modal", "true");
+    var big = document.createElement("img"); big.src = a.href; big.alt = (a.querySelector("img") || {}).alt || "";
+    var close = el("button", null, "Close"); close.type = "button";
+    big.addEventListener("click", function (ev) { ev.stopPropagation(); lb.classList.toggle("full"); });
+    lb.addEventListener("click", closeLb); close.addEventListener("click", closeLb);
+    lb.appendChild(big); lb.appendChild(close); document.body.appendChild(lb); document.body.style.overflow = "hidden"; close.focus();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeLb(); });
 
   /* ---------- tracks behaviour ---------- */
   function initTracks(body, slug) {

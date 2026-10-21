@@ -8,6 +8,7 @@ A simple static site for GitHub Pages. No build step: edit the files, upload the
 - `content.js` is the home page: intro, experience, the list of projects, contact.
 - `projects/` has one text file per project. `about.md` is the About page.
 - `images/` has every picture and animation.
+- `icon.svg`, `favicon-32.png`, `favicon.ico` and `apple-touch-icon.png` are the site icon (black and white).
 
 ## Adding or replacing an image
 
@@ -16,7 +17,8 @@ Put a file with that name in `images/` and the box turns into the image. Nothing
 
 - Formats: `.jpg`, `.png`, `.webp`, `.gif` or `.mp4`. An `.mp4` or `.gif` wins over a still image with the same name.
 - Project thumbnails on the home page use the project name, for example `images/suspects.jpg`.
-- Images show at their own size, so a very large image is shown large. Exported at 2x? Add `@2x` to the name (`name@2x.png`, and the same in the text file) and it shows at half size.
+- Images are shown at most as wide as the text column, never stretched past their own size. Clicking an image opens it larger (click again for 100%, Esc to close).
+- Exported at 2x? Add `@2x` to the name (`name@2x.png`, and the same in the text file) and it shows at half size.
 - Replacing an image: upload a file with the same name. If the old one has a different extension, delete it.
 
 ## Writing and editing
