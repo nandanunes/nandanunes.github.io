@@ -5,7 +5,7 @@ A simple static site for GitHub Pages. No build step: edit the files, upload the
 ## Files
 
 - `index.html` is the site itself. You should not need to touch it.
-- `content.js` is the home page: intro, experience, the list of projects, contact.
+- `content.js` is the home page (intro, the list of projects, contact), the project names, and the Experience list shown on the About page.
 - `projects/` has one text file per project. `about.md` is the About page.
 - `images/` has every picture and animation.
 - `icon.svg`, `favicon-32.png`, `favicon.ico` and `apple-touch-icon.png` are the site icon (black and white).
@@ -40,6 +40,18 @@ Project pages are plain text, written like Notion:
       :::
 
   The names after `:::track` must match the names in the list.
+
+## Case study pages
+
+- A text file can start with a result line, shown big under the title:
+
+      ---
+      result: One sentence with the result.
+      ---
+
+- In `content.js`, `kicker` is the game or company (small text above the title), `title` is the case name, and `meta` is the role.
+- `:::experience` in `about.md` shows the Experience list from `content.js`.
+- `![Name](image-name|16:10|cover)` in a row of images makes same-size tiles that crop to fill, without visible captions (used for Favorite games).
 
 ## Show, hide or reorder projects
 

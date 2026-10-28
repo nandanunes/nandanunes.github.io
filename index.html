@@ -66,6 +66,7 @@ p{margin:0 0 var(--s3)}
 .sec{margin-top:var(--s6)}
 .sec>h2{margin-top:0}
 .intro p{font-size:var(--fs-l);font-weight:300;line-height:1.5}
+.intro p.subtitle{font-size:var(--fs-l);font-weight:500;line-height:1.3;margin:0 0 var(--s3)}
 .intro .more{font-size:var(--fs-xs);font-weight:400;color:var(--muted);margin:var(--s4) 0 0}
 .more a{display:flex;align-items:center;min-height:2.75rem;width:fit-content;max-width:100%}
 .timeline .row{display:block;width:fit-content;max-width:100%;margin-bottom:var(--s4);text-decoration:none;color:inherit}
@@ -117,7 +118,7 @@ p{margin:0 0 var(--s3)}
 
 /* ---------- project and about pages ---------- */
 .back{display:inline-flex;align-items:center;gap:var(--s2);min-height:2.75rem;margin:0 0 var(--s3) calc(-1 * var(--s2));padding:0 var(--s2);font-size:var(--fs-s);color:var(--muted);text-decoration:none}
-.lead{font-size:var(--fs-xl);font-weight:300;line-height:1.35;margin:0 0 var(--s2)}
+.lead{font-size:var(--fs-xl);font-weight:300;line-height:1.35;margin:0 0 var(--s3)}
 .meta{margin:0 0 var(--s5);font-size:var(--fs-s);line-height:1.5;color:var(--muted)}
 .meta div{margin:0}
 .page{font-size:var(--fs-m);line-height:1.6}
@@ -129,7 +130,11 @@ p{margin:0 0 var(--s3)}
 .page blockquote>:last-child{margin-bottom:0}
 .page strong{font-weight:600}
 .page code{font-size:.92em;background:var(--box);padding:.05em .3em;border-radius:3px}
+.page h2{margin-top:var(--s7)}
+.page h3{font-weight:600;margin-top:var(--s6)}
 .page h2:first-child{margin-top:0}
+.page p.intro-p{font-size:var(--fs-l);line-height:1.55}
+.kicker{margin:0 0 var(--s1);font-size:var(--fs-s);font-weight:500;line-height:1.3;color:var(--muted)}
 .page a,.back,.foot a{transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
 @media (hover:hover){
   .page a:hover,.back:hover,.foot a:hover{background:var(--text);color:var(--bg);text-decoration-color:transparent;box-shadow:0 0 0 .18em var(--text)}
@@ -145,6 +150,7 @@ p{margin:0 0 var(--s3)}
 .figs img.real,.figs video.real{display:block;width:auto;max-width:100%;height:auto}
 .figs figcaption{font-size:var(--fs-xs);line-height:1.4;color:var(--muted);margin-top:var(--s2)}
 .box.fixed img,.box.fixed video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.box.fixed.cover img,.box.fixed.cover video{object-fit:cover}
 .box.fixed a.zoom{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;margin:0;cursor:zoom-in}
 
 /* ---------- tracks: pick a step to read more ---------- */
@@ -256,13 +262,14 @@ p{margin:0 0 var(--s3)}
     return b;
   }
   // figure inside a project page: gray box with a label, replaced by the image at its own size
-  function figure(alt, target, rowRatio) {
+  function figure(alt, target, rowRatio, rowFit) {
     var parts = target.split("|"), name = parts[0].trim(), ratio = (rowRatio || parts[1] || "16:9").replace(":", "/");
     var fig = el("figure");
-    var box = el("div", "box" + (rowRatio ? " fixed" : "")); box.style.aspectRatio = ratio; box.setAttribute("role", "img"); box.setAttribute("aria-label", "Image placeholder: " + name);
+    var cover = rowFit === "cover";
+    var box = el("div", "box" + (rowRatio ? " fixed" : "") + (cover ? " cover" : "")); box.style.aspectRatio = ratio; box.setAttribute("role", "img"); box.setAttribute("aria-label", "Image placeholder: " + name);
     if (!/^https?:/.test(name)) box.appendChild(el("span", "tag", esc(name).replace(/-/g, "-<wbr>")));
     fig.appendChild(box);
-    if (alt) fig.appendChild(el("figcaption", null, inline(alt)));
+    if (alt && !cover) fig.appendChild(el("figcaption", null, inline(alt)));
     probe(name, function (src, kind) {
       var m = realMedia(src, kind, alt, rowRatio ? "" : "real", !rowRatio && /@2x$/i.test(name.replace(/\.[a-z0-9]+$/i, "")));
       var node = m;
@@ -307,17 +314,18 @@ p{margin:0 0 var(--s3)}
   }
 
   function md(src) {
-    var lines = src.replace(/\r/g, "").split("\n"), out = document.createDocumentFragment(), i = 0, m;
+    var lines = src.replace(/\r/g, "").split("\n"), out = document.createDocumentFragment(), i = 0, m, afterOverview = false;
     while (i < lines.length) {
       var line = lines[i];
       if (!line.trim()) { i++; continue; }
+      if (/^:::\s*experience\s*$/.test(line)) { out.appendChild(timelineRows(SITE.experience || [])); i++; continue; }      // ::: experience  (the list lives in content.js)
       if ((m = line.match(/^:::\s*(tracks|track)\s*(.*?)\s*$/))) {          // ::: tracks  /  ::: track Name   ...   :::
         var inner = []; i++; while (i < lines.length && !/^:::\s*$/.test(lines[i])) { inner.push(lines[i]); i++; } i++;
         if (m[1] === "tracks") out.appendChild(tracksNav(inner.filter(function (x) { return x.trim(); })));
         else out.appendChild(trackSection(m[2], inner.join("\n")));
         continue;
       }
-      if ((m = line.match(/^(#{1,4})\s+(.*)$/))) { out.appendChild(el("h" + Math.max(2, m[1].length), null, inline(m[2]))); i++; continue; }
+      if ((m = line.match(/^(#{1,4})\s+(.*)$/))) { out.appendChild(el("h" + Math.max(2, m[1].length), null, inline(m[2]))); afterOverview = /^overview$/i.test(m[2].trim()); i++; continue; }
       if (/^\s*---+\s*$/.test(line)) { out.appendChild(el("hr")); i++; continue; }
       if (/^>/.test(line)) {
         var q = []; while (i < lines.length && /^>/.test(lines[i])) { q.push(lines[i].replace(/^>\s?/, "")); i++; }
@@ -326,9 +334,9 @@ p{margin:0 0 var(--s3)}
       if (IMG.test(line.trim())) {            // consecutive image lines become one row
         var imgs = []; while (i < lines.length && IMG.test(lines[i].trim())) { imgs.push(lines[i].trim().match(IMG)); i++; }
         var wrap = el("div", "figs" + (imgs.length > 3 ? " many" : "")), row = el("div", "row");
-        var rowRatio = imgs.length > 1 ? (imgs[0][2].split("|")[1] || "4:3") : null;      // a row shares one box size (the first ratio wins)
+        var first = imgs[0][2].split("|"), rowRatio = imgs.length > 1 ? (first[1] || "4:3") : null, rowFit = first[2] || "";      // a row shares one box size (the first ratio wins)
         row.style.setProperty("--n", Math.min(imgs.length, 3));
-        imgs.forEach(function (g) { row.appendChild(figure(g[1], g[2], rowRatio)); });
+        imgs.forEach(function (g) { row.appendChild(figure(g[1], g[2], rowRatio, rowFit)); });
         wrap.appendChild(row); out.appendChild(wrap); continue;
       }
       if (/^\s*([-*]|\d+\.)\s+/.test(line)) {
@@ -336,7 +344,7 @@ p{margin:0 0 var(--s3)}
         out.appendChild(list(items)); continue;
       }
       var para = []; while (i < lines.length && lines[i].trim() && (para.length === 0 || !isBlockStart(lines[i]))) { para.push(lines[i].trim()); i++; }
-      out.appendChild(el("p", null, para.map(inline).join("<br>")));
+      var pe = el("p", afterOverview ? "intro-p" : null, para.map(inline).join("<br>")); afterOverview = false; out.appendChild(pe);
     }
     return out;
   }
@@ -425,17 +433,27 @@ p{margin:0 0 var(--s3)}
   }
   function setTitle(t) { document.title = t ? t + " | " + SITE.name : SITE.name; }
 
+  function timelineRows(items) {
+    var box = el("div", "timeline");
+    items.forEach(function (it) {
+      var bits = it[1].split(" @ "), company = bits[1] ? (it[2] ? '<a class="co" href="' + esc(it[2]) + '" target="_blank" rel="noopener">' + esc(bits[1]) + "</a>" : esc(bits[1])) : "";
+      var role = inline(bits[0]) + (company ? " @ " + company : "");
+      box.appendChild(el("div", "row", "<small>" + esc(it[0]) + '</small><span class="role">' + role + "</span>"));
+    });
+    return box;
+  }
   function projectRow(slug) {
     var p = SITE.projects[slug]; if (!p) return el("div");
     var a = el("a", "item hl"); a.href = "#/p/" + slug;
     a.appendChild(thumbBox(p.thumb || slug, "thumb"));
-    var t = el("div"); t.appendChild(el("div", "t u", inline(p.title))); t.appendChild(el("div", "d", inline(p.line || "")));
+    var t = el("div"); t.appendChild(el("div", "t u", inline(p.kicker || p.title))); t.appendChild(el("div", "d", inline(p.line || "")));
     a.appendChild(t); return a;
   }
   var SECTIONS = {
     intro: function (s) {
       var d = el("section", "sec intro"); d.style.marginTop = "0";
       d.appendChild(el("h1", null, inline(s.title)));
+      if (s.subtitle) d.appendChild(el("p", "subtitle", inline(s.subtitle)));
       d.appendChild(md(s.text));
       if (s.more) { var p = el("p", "more"); p.innerHTML = '<a class="hl" href="#/' + s.more.to + '"><span class="u">\u2192 ' + esc(s.more.text) + "</span></a>"; d.appendChild(p); }
       return d;
@@ -475,13 +493,19 @@ p{margin:0 0 var(--s3)}
     SITE.home.forEach(function (s) { var f = SECTIONS[s.type]; if (f) main.appendChild(f(s)); });
   }
   function subpage(o) {
-    current = null; setTitle(o.title); main.textContent = "";
+    current = null; setTitle((o.kicker ? o.kicker + ": " : "") + o.title); main.textContent = "";
     var back = el("a", "back", '<span aria-hidden="true">\u2190</span> Home'); back.href = "#/"; back.setAttribute("aria-label", "Back to home"); main.appendChild(back);
+    if (o.kicker) main.appendChild(el("p", "kicker", inline(o.kicker)));
     main.appendChild(el("h1", null, inline(o.title)));
-    if (o.line) main.appendChild(el("p", "lead", inline(o.line)));
+    var leadEl = el("p", "lead"); if (o.line) leadEl.innerHTML = inline(o.line); else leadEl.hidden = true; main.appendChild(leadEl);
     if (o.meta && o.meta.length) main.appendChild(el("div", "meta", o.meta.map(function (m) { return "<div>" + esc(typeof m === "string" ? m : m[1]) + "</div>"; }).join("")));
     var body = el("div", "page"); main.appendChild(body);
     loadText(o.file, o.key).then(function (txt) {
+      var fm = txt.match(/^---\n([\s\S]*?)\n---\n?/);                                      // optional top block:  result: one line
+      if (fm) {
+        txt = txt.slice(fm[0].length);
+        fm[1].split("\n").forEach(function (l) { var k = l.indexOf(":"); if (k > 0 && l.slice(0, k).trim() === "result") { leadEl.innerHTML = inline(l.slice(k + 1).trim()); leadEl.hidden = false; } });
+      }
       body.appendChild(md(txt));
       var api = initTracks(body, o.slug);
       current = { slug: o.slug, api: api };
@@ -493,7 +517,7 @@ p{margin:0 0 var(--s3)}
   }
   function project(slug, track) {
     var p = SITE.projects[slug]; if (!p) return home();
-    subpage({ title: p.title, line: p.pageLine !== undefined ? p.pageLine : p.line, meta: p.meta, slug: slug, file: "projects/" + slug + ".md", key: slug, track: track });
+    subpage({ kicker: p.kicker, title: p.title, line: p.pageLine !== undefined ? p.pageLine : p.line, meta: p.meta, slug: slug, file: "projects/" + slug + ".md", key: slug, track: track });
   }
   function about() { subpage({ title: SITE.about.title, line: SITE.about.line, slug: "about", file: "about.md", key: "about" }); }
 
