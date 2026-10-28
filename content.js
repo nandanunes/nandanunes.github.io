@@ -51,16 +51,6 @@ window.SITE = {
                                meta: ["Game Design, Product Management, Visual Designer", "Global Game Jam, 2017"] }
   },
 
-  /* ---------- Experience: shown on the About page (the line  :::experience  in about.md) ----------
-     [ "dates", "Role @ Company", "company link" ]                                              */
-  experience: [
-    ["May 2023 – Present", "Senior UX & Creative Designer @ Rovio", "https://www.rovio.com"],
-    ["May 2022 – May 2023", "Senior UX Designer @ Wildlife", "https://wildlifestudios.com"],
-    ["Jan 2022 – May 2022", "Senior Product Designer @ Nubank", "https://nubank.com.br"],
-    ["Aug 2020 – Dec 2021", "UX Designer @ Wildlife", "https://wildlifestudios.com"],
-    ["Dec 2018 – Aug 2020", "UX Designer @ PagBank", "https://pagbank.com.br"]
-  ],
-
   /* ---------- About page (text is in about.md) ---------- */
   about: { title: "More about me", line: "" },
 

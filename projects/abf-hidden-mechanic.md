@@ -1,6 +1,4 @@
----
 result: Triggers can now be spotted at a glance on small screens and show what they connect to, so puzzles are clearer, and Level Designers have more flexibility to work with them thanks to the new colors, elements and size.
----
 
 ![Lorem ipsum dolor sit amet, consectetur adipiscing elit.](abf-hidden-mechanic-hero|16:9)
 

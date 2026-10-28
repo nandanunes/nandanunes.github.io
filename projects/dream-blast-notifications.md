@@ -1,6 +1,4 @@
----
 result: In a live comparison of two game versions, early retention and engagement improved across player groups, and the team recommended a full release.
----
 
 ![Lorem ipsum dolor sit amet, consectetur adipiscing elit.](dream-blast-notifications-hero|16:9)
 

@@ -23,7 +23,7 @@
   --bg:#fafafa; --text:#1c1c1c; --muted:#5e5e5e; --box:#d9d9d9; --tag:#4a4a4a; --tint:rgba(0,0,0,.05);
   --fs-xs:.875rem; --fs-s:1rem; --fs-m:1.125rem; --fs-l:1.25rem; --fs-xl:1.5rem; --fs-2xl:2rem; --fs-3xl:3rem;
   --s1:.25rem; --s2:.5rem; --s3:1rem; --s4:1.5rem; --s5:2rem; --s6:3rem; --s7:4rem; --s8:6rem;
-  --col:42rem; --wide:60rem; --gap:var(--s4); --band-y:var(--s2);
+  --col:42rem; --wide:60rem; --gap:var(--s4); --band-y:var(--s2); --r:.5rem;
   --W:calc(min(var(--col), 100vw) - 2 * var(--s4));
   --ease:cubic-bezier(.22,.8,.24,1);
   --font:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -88,56 +88,43 @@ p{margin:0 0 var(--s3)}
   .intro p{font-size:var(--fs-m);font-weight:400}
 }
 
-/* ---------- hover: a full-width band wipes in and leaves the other way ---------- */
-.hl{position:relative;isolation:isolate;text-decoration:none;color:inherit;transition:color .25s ease .05s;-webkit-tap-highlight-color:transparent}
-.hl::before{content:"";position:absolute;z-index:-1;pointer-events:none;
-  top:calc(-1 * var(--band-y));bottom:calc(-1 * var(--band-y));
-  left:calc((var(--W) - 100vw) / 2);width:100vw;
-  background:var(--text);transform:scaleX(0);transform-origin:100% 50%;
-  transition:transform .45s var(--ease)}
-/* side projects: left column enters from the left, right column enters from the right */
-.grid .hl:nth-child(odd)::before{width:calc((100vw - var(--gap)) / 2)}
-.grid .hl:nth-child(even)::before{left:0;width:calc(50vw - var(--gap) / 2);transform-origin:0 50%}
-.u{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;text-decoration-color:transparent;transition:text-decoration-color .3s ease}
+/* ---------- clickable rows: a soft tint and an underline on hover, a clear outline on keyboard focus ---------- */
+.hl{position:relative;isolation:isolate;text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+.hl::before{content:"";position:absolute;z-index:-1;inset:calc(-1 * var(--s2));border-radius:var(--r);background:var(--tint);opacity:0;transition:opacity .2s ease;pointer-events:none}
+.u{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em;text-decoration-color:transparent;transition:text-decoration-color .2s ease}
 .co{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.22em}
-.hl:focus-visible,.hl[aria-expanded="true"]{outline:none;color:var(--bg)}
-.hl:focus-visible::before,.hl[aria-expanded="true"]::before{transform:scaleX(1);transform-origin:0 50%}
-.grid .hl:nth-child(even):focus-visible::before{transform-origin:100% 50%}
+.hl[aria-expanded="true"]::before{opacity:1}
+.hl:focus-visible{outline:2px solid var(--text);outline-offset:4px;border-radius:var(--r)}
 .hl:focus-visible .u{text-decoration-color:currentColor}
 @media (hover:hover){
-  .hl:hover{color:var(--bg)}
-  .hl:hover::before{transform:scaleX(1);transform-origin:0 50%}
-  .grid .hl:nth-child(even):hover::before{transform:scaleX(1);transform-origin:100% 50%}
+  .hl:hover::before{opacity:1}
   .hl:hover .u{text-decoration-color:currentColor}
 }
-@media (max-width:560px){
-  .grid .hl:nth-child(odd)::before,.grid .hl:nth-child(even)::before{left:calc((var(--W) - 100vw) / 2);width:100vw;transform-origin:100% 50%}
-  .grid .hl:nth-child(even):focus-visible::before{transform-origin:0 50%}
-}
-@media (max-width:560px) and (hover:hover){.grid .hl:nth-child(even):hover::before{transform-origin:0 50%}}
 
 /* ---------- project and about pages ---------- */
 .back{display:inline-flex;align-items:center;gap:var(--s2);min-height:2.75rem;margin:0 0 var(--s3) calc(-1 * var(--s2));padding:0 var(--s2);font-size:var(--fs-s);color:var(--muted);text-decoration:none}
 .lead{font-size:var(--fs-xl);font-weight:300;line-height:1.35;margin:0 0 var(--s3)}
 .meta{margin:0 0 var(--s5);font-size:var(--fs-s);line-height:1.5;color:var(--muted)}
 .meta div{margin:0}
-.page{font-size:var(--fs-m);line-height:1.6}
+.page{font-size:var(--fs-m);font-weight:300;line-height:1.65}
 .page ul,.page ol{padding-left:var(--s4);margin:0 0 var(--s3)}
 .page li{margin:var(--s1) 0}
 .page ul ul,.page ol ul,.page ul ol{margin:var(--s1) 0}
 .page hr{border:0;height:var(--s5);margin:0}
 .page blockquote{margin:var(--s4) 0;padding:var(--s3) var(--s4);background:var(--tint)}
 .page blockquote>:last-child{margin-bottom:0}
-.page strong{font-weight:600}
+.page strong{font-weight:500}
 .page code{font-size:.92em;background:var(--box);padding:.05em .3em;border-radius:3px}
 .page h2{margin-top:var(--s7)}
-.page h3{font-weight:600;margin-top:var(--s6)}
+.page h3{font-weight:500;margin-top:var(--s6)}
+.page h4{font-weight:500}
 .page h2:first-child{margin-top:0}
 .page p.intro-p{font-size:var(--fs-l);line-height:1.55}
 .kicker{margin:0 0 var(--s1);font-size:var(--fs-s);font-weight:500;line-height:1.3;color:var(--muted)}
-.page a,.back,.foot a{transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.page a,.back,.foot a{transition:color .2s ease,text-decoration-thickness .2s ease}
 @media (hover:hover){
-  .page a:hover,.back:hover,.foot a:hover{background:var(--text);color:var(--bg);text-decoration-color:transparent;box-shadow:0 0 0 .18em var(--text)}
+  .page a:hover,.foot a:hover{text-decoration-thickness:2px}
+  .back:hover{color:var(--text)}
 }
 
 /* images: wider than the text column, but never stretched past their own size */
@@ -152,6 +139,21 @@ p{margin:0 0 var(--s3)}
 .box.fixed img,.box.fixed video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .box.fixed.cover img,.box.fixed.cover video{object-fit:cover}
 .box.fixed a.zoom{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;margin:0;cursor:zoom-in}
+
+/* ---------- experience: click a job to open the details ---------- */
+.exp{margin:0 0 var(--s4)}
+.exp-btn{display:block;width:fit-content;max-width:100%;min-height:2.75rem;padding:0;background:none;border:0;text-align:left;cursor:pointer}
+.exp-btn small{display:block;font-size:var(--fs-xs);font-weight:400;line-height:1.4}
+.exp-btn .role{display:flex;align-items:baseline;gap:var(--s2);font-size:var(--fs-l);font-weight:300;line-height:1.4}
+.exp-btn .ti{font-size:var(--fs-l);line-height:1.3;min-width:1ch}
+.exp-btn .ti::before{content:"+"}
+.exp-btn[aria-expanded="true"] .ti::before{content:"\2212"}
+.exp-body{margin:var(--s3) 0 var(--s5);font-size:var(--fs-s);line-height:1.65}
+.exp-body[hidden]{display:none}
+.exp-body.show{animation:trackin .4s var(--ease)}
+.exp-body>:first-child{margin-top:0}
+.exp-body h4{font-size:var(--fs-s);margin:var(--s4) 0 var(--s2)}
+.exp-body p{margin-bottom:var(--s3)}
 
 /* ---------- tracks: pick a step to read more ---------- */
 .tracks{margin:var(--s4) 0 var(--s3)}
@@ -183,7 +185,7 @@ p{margin:0 0 var(--s3)}
 .foot{margin-top:var(--s7);font-size:var(--fs-s)}
 .foot a{display:inline-flex;align-items:center;min-height:2.75rem;text-decoration:none}
 .error{color:var(--muted);font-size:var(--fs-s)}
-@media (prefers-reduced-motion:reduce){.hl,.hl::before,.u,.co,.track.show{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){.hl,.hl::before,.u,.co,.track.show,.exp-body.show{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
@@ -318,7 +320,10 @@ p{margin:0 0 var(--s3)}
     while (i < lines.length) {
       var line = lines[i];
       if (!line.trim()) { i++; continue; }
-      if (/^:::\s*experience\s*$/.test(line)) { out.appendChild(timelineRows(SITE.experience || [])); i++; continue; }      // ::: experience  (the list lives in content.js)
+      if ((m = line.match(/^:::\s*job\s+(.+?)\s*$/))) {                    // ::: job  dates | Role @ Company   ...text...   :::
+        var jobLines = []; i++; while (i < lines.length && !/^:::\s*$/.test(lines[i])) { jobLines.push(lines[i]); i++; } i++;
+        out.appendChild(jobItem(m[1], jobLines.join("\n"))); continue;
+      }
       if ((m = line.match(/^:::\s*(tracks|track)\s*(.*?)\s*$/))) {          // ::: tracks  /  ::: track Name   ...   :::
         var inner = []; i++; while (i < lines.length && !/^:::\s*$/.test(lines[i])) { inner.push(lines[i]); i++; } i++;
         if (m[1] === "tracks") out.appendChild(tracksNav(inner.filter(function (x) { return x.trim(); })));
@@ -429,18 +434,22 @@ p{margin:0 0 var(--s3)}
   /* ---------- pages ---------- */
   function loadText(path, key) {
     if (window.INLINE_MD && window.INLINE_MD[key] != null) return Promise.resolve(window.INLINE_MD[key]);
-    return fetch(path).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); });
+    return fetch(path).then(function (r) { if (!r.ok) { var e = new Error("HTTP " + r.status); e.path = path; throw e; } return r.text(); });
   }
   function setTitle(t) { document.title = t ? t + " | " + SITE.name : SITE.name; }
 
-  function timelineRows(items) {
-    var box = el("div", "timeline");
-    items.forEach(function (it) {
-      var bits = it[1].split(" @ "), company = bits[1] ? (it[2] ? '<a class="co" href="' + esc(it[2]) + '" target="_blank" rel="noopener">' + esc(bits[1]) + "</a>" : esc(bits[1])) : "";
-      var role = inline(bits[0]) + (company ? " @ " + company : "");
-      box.appendChild(el("div", "row", "<small>" + esc(it[0]) + '</small><span class="role">' + role + "</span>"));
+  var jobCount = 0;
+  function jobItem(head, bodyText) {
+    var parts = head.split("|"), date = parts[0].trim(), role = (parts[1] || "").trim(), id = "job-" + (++jobCount);
+    var wrap = el("div", "exp");
+    var btn = el("button", "exp-btn hl", "<small>" + esc(date) + '</small><span class="role"><span>' + inline(role) + '</span><span class="ti" aria-hidden="true"></span></span>');
+    btn.type = "button"; btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-controls", id);
+    var body = el("div", "exp-body"); body.id = id; body.hidden = true; body.appendChild(md(bodyText));
+    btn.addEventListener("click", function () {
+      var open = body.hidden; body.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+      if (open) { body.classList.remove("show"); void body.offsetWidth; body.classList.add("show"); }
     });
-    return box;
+    wrap.appendChild(btn); wrap.appendChild(body); return wrap;
   }
   function projectRow(slug) {
     var p = SITE.projects[slug]; if (!p) return el("div");
@@ -506,13 +515,17 @@ p{margin:0 0 var(--s3)}
         txt = txt.slice(fm[0].length);
         fm[1].split("\n").forEach(function (l) { var k = l.indexOf(":"); if (k > 0 && l.slice(0, k).trim() === "result") { leadEl.innerHTML = inline(l.slice(k + 1).trim()); leadEl.hidden = false; } });
       }
+      var rm = txt.match(/^result:[ \t]*(.+?)[ \t]*(?:\n|$)/);                              // first line of the text file:  result: one sentence
+      if (rm) { txt = txt.slice(rm[0].length); leadEl.innerHTML = inline(rm[1]); leadEl.hidden = false; }
       body.appendChild(md(txt));
       var api = initTracks(body, o.slug);
       current = { slug: o.slug, api: api };
       var foot = el("div", "foot"); var a = el("a", null, '<span aria-hidden="true">\u2190</span>&nbsp;Home'); a.href = "#/"; foot.appendChild(a); main.appendChild(foot);
       if (api && o.track) setTimeout(function () { api.sync(o.track); }, 80);
-    }).catch(function () {
-      body.appendChild(el("p", "error", "This page could not be loaded. If you opened index.html by double-clicking it, use a local server instead (for example VS Code with Live Server), because browsers block loading the text files from a plain file."));
+    }).catch(function (err) {
+      var detail = err && err.path ? " (" + err.path + ": " + err.message + ")" : "";
+      body.appendChild(el("p", "error", "This page could not be loaded" + detail + ". If the file exists, check that it is in the right folder. If you opened index.html by double-clicking it, use a local server instead (for example VS Code with Live Server), because browsers block loading the text files from a plain file."));
+      if (window.console) console.error(err);
     });
   }
   function project(slug, track) {

@@ -5,7 +5,7 @@ A simple static site for GitHub Pages. No build step: edit the files, upload the
 ## Files
 
 - `index.html` is the site itself. You should not need to touch it.
-- `content.js` is the home page (intro, the list of projects, contact), the project names, and the Experience list shown on the About page.
+- `content.js` is the home page (intro, the list of projects, contact) and the project names.
 - `projects/` has one text file per project. `about.md` is the About page.
 - `images/` has every picture and animation.
 - `icon.svg`, `favicon-32.png`, `favicon.ico` and `apple-touch-icon.png` are the site icon (black and white).
@@ -43,14 +43,16 @@ Project pages are plain text, written like Notion:
 
 ## Case study pages
 
-- A text file can start with a result line, shown big under the title:
+- A project text file can start with a result line, shown big under the title. It must be the very first line of the file:
 
-      ---
       result: One sentence with the result.
-      ---
 
 - In `content.js`, `kicker` is the game or company (small text above the title), `title` is the case name, and `meta` is the role.
-- `:::experience` in `about.md` shows the Experience list from `content.js`.
+- On the About page, each position is a block that opens with a plus sign:
+
+      :::job May 2023 – Present | Senior UX & Creative Designer @ Rovio
+      Text, lists and headings of the position.
+      :::
 - `![Name](image-name|16:10|cover)` in a row of images makes same-size tiles that crop to fill, without visible captions (used for Favorite games).
 
 ## Show, hide or reorder projects
@@ -69,3 +71,7 @@ Opening `index.html` by double-clicking will not load the text files, because br
 ## Publishing
 
 Upload the files to the repository (Add file > Upload files, or GitHub Desktop: Commit and Push). The site updates in a minute or two.
+
+## Important: the .nojekyll file
+
+The repository must contain an empty file named `.nojekyll` in the root. Without it GitHub may process the text files and the pages fail to load. If it is missing: Add file > Create new file, name it `.nojekyll`, commit.

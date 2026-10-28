@@ -1,6 +1,4 @@
----
 result: Levels now sit in recognizable Piggy Island locations with calmer, clearer backgrounds, players received the change well, and Level Designers are already building levels around the new pig personalities.
----
 
 ![Lorem ipsum dolor sit amet, consectetur adipiscing elit.](abf-piggy-island-hero|16:9)
 
